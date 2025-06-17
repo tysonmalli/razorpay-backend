@@ -17,8 +17,8 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET
 });
 
-// Initialize Firebase Admin
-const serviceAccount = require("./firebase-key.json");
+// Initialize Firebase Admin with env-based service account
+const serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
