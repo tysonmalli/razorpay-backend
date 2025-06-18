@@ -18,7 +18,7 @@ const razorpay = new Razorpay({
 });
 
 // Initialize Firebase Admin with env-based service account
-const serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
+const serviceAccount = require("./firebase-key.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
@@ -39,6 +39,55 @@ app.post("/create-order", async (req, res) => {
   } catch (err) {
     console.error("Error creating Razorpay order", err);
     res.status(500).send("Unable to create order");
+  }
+});
+
+// Text to Image Generation Endpoint
+app.post("/generate-image", async (req, res) => {
+  const { prompt, aspectRatio, model } = req.body;
+
+  if (!prompt || !model) {
+    return res.status(400).json({ error: "Prompt and model required" });
+  }
+
+  const [width, height] = aspectRatio.split("x").map(Number);
+
+  let modelVersion = "";
+  if (model === "sdxl") {
+    modelVersion = "stability-ai/sdxl";
+  } else if (model === "imagen-4") {
+    modelVersion = "google/imagen-4";
+  } else if (model === "pixart-xl") {
+    modelVersion = "pixray/pixart-xl";
+  } else if (model === "minimax") {
+    modelVersion = "minimax/image-01";
+  } else {
+    return res.status(400).json({ error: "Invalid model selected" });
+  }
+
+  try {
+    const replicate = require("replicate");
+    const replicateInstance = new replicate({
+      auth: process.env.REPLICATE_API_TOKEN,
+    });
+
+    const output = await replicateInstance.run(modelVersion, {
+      input: {
+        prompt,
+        width,
+        height
+      }
+    });
+
+    const image = output?.[0];
+    if (!image) {
+      return res.status(500).json({ error: "Failed to generate image" });
+    }
+
+    res.json({ image });
+  } catch (err) {
+    console.error("Replicate API error:", err);
+    res.status(500).json({ error: "Image generation failed" });
   }
 });
 
