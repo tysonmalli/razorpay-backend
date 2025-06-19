@@ -121,6 +121,40 @@ app.post("/generate-video", async (req, res) => {
   }
 });
 
+// Submit Video Job Proxy (to avoid CORS in frontend)
+app.post("/submit-video-job", async (req, res) => {
+  try {
+    const {
+      uid,
+      prompt,
+      modelId,
+      modelName,
+      imageUrl,
+      width,
+      height,
+      duration
+    } = req.body;
+
+    const docRef = await db.collection("video_jobs").add({
+      uid,
+      prompt,
+      modelId,
+      modelName,
+      imageUrl,
+      width,
+      height,
+      duration,
+      status: "queued",
+      createdAt: new Date()
+    });
+
+    res.json({ success: true, id: docRef.id });
+  } catch (err) {
+    console.error("🔥 Firebase job submit error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
