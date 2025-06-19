@@ -1,21 +1,22 @@
 // jobProcessor.js
 require("dotenv").config();
-const { initializeApp, applicationDefault } = require("firebase-admin/app");
-const { getFirestore } = require("firebase-admin/firestore");
-const { getStorage } = require("firebase-admin/storage");
+const admin = require("firebase-admin");
 const Replicate = require("replicate");
 const fetch = require("node-fetch");
 const path = require("path");
 const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
 
-initializeApp({
-  credential: applicationDefault(),
+// Initialize Firebase with service account key
+const serviceAccount = require("./firebase-key.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
   storageBucket: "ai-tools-login-e0a25.appspot.com"
 });
 
-const db = getFirestore();
-const bucket = getStorage().bucket();
+const db = admin.firestore();
+const bucket = admin.storage().bucket();
 const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 
 const MODELS = {

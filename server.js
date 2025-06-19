@@ -21,10 +21,12 @@ const razorpay = new Razorpay({
 const serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: admin.credential.cert(serviceAccount),
+  storageBucket: "ai-tools-login-e0a25.appspot.com"
 });
 
 const db = admin.firestore();
+const bucket = admin.storage().bucket(); // Firebase Storage Bucket instance
 
 // Razorpay Order Endpoint
 app.post("/create-order", async (req, res) => {
